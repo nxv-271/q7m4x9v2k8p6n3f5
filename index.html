@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7b5bd">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="大阪2027">
+<meta name="description" content="大阪・京都 2027 旅行小工具：行程、地圖、集合資訊，離線也能看">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<title>大阪・京都 2027</title>
+<style>
+:root{
+  --bg:#fffaf4; --ink:#4d3b3b; --muted:#8a7676; --line:#ead9d3;
+  --pink:#f7b5bd; --coral:#d85c6a; --navh:56px; --tabh:64px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Heiti TC","Microsoft JhengHei",sans-serif;
+  padding-bottom:calc(var(--tabh) + env(safe-area-inset-bottom) + 10px);
+  -webkit-user-select:none; user-select:none;
+}
+img, .panel, .tbody, .note{-webkit-user-select:text; user-select:text}
+main{max-width:760px;margin:auto;padding:14px 14px 20px}
+h1{font-size:24px;margin:2px 0 0} h2{font-size:19px;margin:18px 0 8px} h3{margin:16px 0 7px;font-size:15px}
+p{color:var(--muted);margin:4px 0 0}
+.hero{background:linear-gradient(135deg,var(--pink),var(--coral));border-radius:22px;padding:18px 18px 16px;color:#fff;margin-bottom:14px;box-shadow:0 6px 18px rgba(216,92,106,.25)}
+.hero h1{color:#fff}
+.hero .dates{font-weight:800;margin-top:6px;font-size:15px;opacity:.96}
+.hero .fam{margin-top:2px;font-size:13px;opacity:.9}
+.daygrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.daycard{display:block;background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px 14px;text-decoration:none;color:var(--ink);box-shadow:0 2px 6px rgba(77,59,59,.05)}
+.daycard .dtag{font-weight:800;font-size:13px;color:var(--coral)}
+.daycard .ddate{font-size:12px;color:var(--muted);margin-top:2px}
+.daycard .dtitle{font-weight:700;font-size:14px;margin-top:6px;line-height:1.4}
+.note{background:#fff5f6;border:1px dashed #efc6ce;border-radius:15px;padding:12px;line-height:1.6;margin:12px 0;font-size:13px}
+.funpass{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.pass{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12.5px;font-weight:600}
+details{background:#fff;border:1px solid var(--line);border-radius:20px;margin:12px 0;overflow:hidden;scroll-margin-top:calc(var(--navh) + 12px)}
+summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;cursor:pointer;padding:14px 16px;font-weight:700}
+summary::-webkit-details-marker{display:none}
+summary .chev{color:var(--muted);font-size:13px;transition:transform .2s}
+details[open] summary .chev{transform:rotate(90deg)}
+summary small{display:block;font-weight:500;color:var(--muted);margin-top:3px}
+.panel{padding:0 16px 18px}
+.zoomlink{position:relative;display:block;text-decoration:none;color:inherit;margin:10px 0}
+.mapimg{display:block;width:100%;height:auto;border-radius:15px;border:1px solid var(--line);background:#fff}
+.zoomhint{position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.imggrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.imggrid figure{margin:0}
+.imggrid a{display:block;position:relative}
+.imggrid img{display:block;width:100%;height:150px;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
+.imggrid figcaption{font-size:12px;color:var(--muted);margin-top:4px;text-align:center}
+@media(max-width:380px){.imggrid img{height:120px}}
+.timeline{display:grid;gap:10px;margin:10px 0}
+.trow{display:grid;grid-template-columns:58px 1fr;gap:8px;align-items:start}
+.time{font-weight:800;color:var(--coral);font-size:13px;padding-top:1px}
+.tbody{line-height:1.6;font-size:14.5px}
+.tbody b{font-weight:700}
+.arrow{color:var(--muted);font-size:12px;margin:0 0 0 62px}
+.brandlist{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+.brand{background:#fff5f6;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:600}
+.brand.tbd{opacity:.65;font-style:italic}
+.gmap{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 13px;text-decoration:none;color:var(--ink);font-weight:700;font-size:13.5px;margin:6px 6px 0 0}
+.gmap:active{background:#fdeef0}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,250,244,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px max(10px,env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-right));display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tabbtn{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--ink);font-size:11px;font-weight:700;padding:6px 2px;border-radius:12px}
+.tabbtn:active{background:#fdeef0}
+.tabbtn .ic{font-size:19px}
+section#overall{scroll-margin-top:calc(var(--navh) + 12px)}
+.offlinebar{display:none;background:#fff3cd;border:1px solid #f0d98c;color:#7a6415;border-radius:12px;padding:9px 12px;font-size:12.5px;margin-bottom:10px;text-align:center;font-weight:700}
+.offlinebar.show{display:block}
+</style>
+</head>
+<body>
+<main>
+<div id="offlineBar" class="offlinebar">📡 目前離線中，顯示已快取的內容（地圖圖片與行程一樣可看）</div>
+<div class="hero">
+  <h1>🇯🇵 大阪・京都</h1>
+  <div class="dates">2027/1/24 ～ 1/28・5天4夜</div>
+  <div class="fam">3大2小</div>
+</div>
+
+<section id="overall">
+<h2>📋 5 天總行程</h2>
+<a class="zoomlink" href="assets/overview.png" target="_blank" rel="noopener">
+<img class="mapimg" src="assets/overview.png" alt="五天總行程" loading="eager"><span class="zoomhint">🔍 點圖開原圖放大</span></a>
+</section>
+
+<div class="daygrid" id="top">
+  <a class="daycard" href="#d1"><div class="dtag">D1・1/24</div><div class="ddate">心齋橋・難波・道頓堀</div></a>
+  <a class="daycard" href="#d2"><div class="dtag">D2・1/25</div><div class="ddate">伊根・天橋立・美山</div></a>
+  <a class="daycard" href="#d3"><div class="dtag">D3・1/26</div><div class="ddate">勝尾寺・梅田</div></a>
+  <a class="daycard" href="#d4"><div class="dtag">D4・1/27</div><div class="ddate">京都・通天閣</div></a>
+  <a class="daycard" href="#d5"><div class="dtag">D5・1/28</div><div class="ddate">臨空城 Outlet・KIX</div></a>
+</div>
+
+<div class="note">
+<b>🎫 FUN PASS：</b>
+<div class="funpass">
+<span class="pass">D1 ✈️ INNN Shuttle</span>
+<span class="pass">D1 🚢 道頓堀遊船</span>
+<span class="pass">D4 🗼 通天閣</span>
+</div>
+</div>
+
+<details id="d1">
+<summary><span>🩷 D1｜1/24 心齋橋・難波・道頓堀<br><small>KIX → INNN Shuttle → 心齋橋 → 難波 → 道頓堀</small></span><span class="chev">▸</span></summary>
+<div class="panel">
+<div class="timeline"><div class="trow"><div class="time">Start</div><div class="tbody"><b>KIX</b></div></div></div>
+<div class="arrow">↓ INNN Shuttle</div>
+<div class="timeline"><div class="trow"><div class="time"></div><div class="tbody"><b>Hotel Legalie Osaka Shinsaibashi North</b></div></div></div>
+<div class="arrow">↓</div>
+<div class="timeline"><div class="trow"><div class="time"></div><div class="tbody">心齋橋 → 難波 → 道頓堀</div></div></div>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=HOTEL%20LEGALIE%20Osaka%20Shinsaibashi%20North" target="_blank" rel="noopener">🧭 導航到飯店</a>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=道頓堀" target="_blank" rel="noopener">🧭 導航到道頓堀</a>
+<h3>🗺 心齋橋／難波逛街美食地圖</h3>
+<a class="zoomlink" href="assets/d1.png" target="_blank" rel="noopener"><img class="mapimg" src="assets/d1.png" alt="D1 心齋橋難波地圖" loading="lazy"><span class="zoomhint">🔍 點圖開原圖放大</span></a>
+</div></details>
+
+<details id="d2">
+<summary><span>💙 D2｜1/25 伊根・天橋立・美山<br><small>KKday／GOGODAY 一日遊・07:05 日本橋站 2 號出口集合</small></span><span class="chev">▸</span></summary>
+<div class="panel">
+<div class="timeline"><div class="trow"><div class="time">06:30</div><div class="tbody"><b>飯店出發</b><br>Hotel Legalie Osaka Shinsaibashi North</div></div></div>
+<div class="arrow">↓ 步行</div>
+<div class="timeline"><div class="trow"><div class="time"></div><div class="tbody">長堀橋站</div></div></div>
+<div class="arrow">↓ Osaka Metro 堺筋線（只有 1 站）</div>
+<div class="timeline">
+<div class="trow"><div class="time"></div><div class="tbody">日本橋站 K17</div></div>
+<div class="trow"><div class="time">06:50</div><div class="tbody">左右抵達日本橋站 2 號出口地面</div></div>
+<div class="trow"><div class="time">07:05</div><div class="tbody"><b>正式集合</b><br>集合地點：日本橋車站 2 號出口</div></div>
+</div>
+<div class="imggrid">
+<figure><a href="assets/d2_meeting.jpg" target="_blank" rel="noopener"><img src="assets/d2_meeting.jpg" alt="日本橋2號出口集合位置" loading="lazy"><span class="zoomhint" style="right:6px;bottom:6px;padding:5px 8px;font-size:11px">🔍</span></a><figcaption>日本橋站 2 號出口</figcaption></figure>
+<figure><a href="assets/d2_flag.png" target="_blank" rel="noopener"><img src="assets/d2_flag.png" alt="GOGODAY 黃色小旗" loading="lazy"><span class="zoomhint" style="right:6px;bottom:6px;padding:5px 8px;font-size:11px">🔍</span></a><figcaption>GOGODAY 黃色小旗</figcaption></figure>
+</div>
+<div class="note">集合時請找 GOGODAY 黃色小旗。</div>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=日本橋駅%202番出口%20大阪" target="_blank" rel="noopener">🧭 導航到日本橋站</a>
+</div></details>
+
+<details id="d3">
+<summary><span>💚 D3｜1/26 勝尾寺・梅田<br><small>勝尾寺 → 梅田購物</small></span><span class="chev">▸</span></summary>
+<div class="panel">
+<div class="timeline"><div class="trow"><div class="time">Start</div><div class="tbody"><b>勝尾寺</b></div></div></div>
+<div class="arrow">↓</div>
+<div class="timeline"><div class="trow"><div class="time"></div><div class="tbody"><b>梅田</b><br>LINKS UMEDA → Grand Front Osaka → SORA → KITTE Osaka → HEP FIVE</div></div></div>
+<div class="note">HEP FIVE 仍然是逛街行程，只是不列入 FUN PASS 使用項目。</div>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=勝尾寺" target="_blank" rel="noopener">🧭 導航到勝尾寺</a>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=梅田駅" target="_blank" rel="noopener">🧭 導航到梅田</a>
+<h3>🗺 梅田逛街美食地圖</h3>
+<a class="zoomlink" href="assets/d3_umeda.png" target="_blank" rel="noopener"><img class="mapimg" src="assets/d3_umeda.png" alt="梅田逛街美食地圖" loading="lazy"><span class="zoomhint">🔍 點圖開原圖放大</span></a>
+</div></details>
+
+<details id="d4">
+<summary><span>🧡 D4｜1/27 京都・通天閣<br><small>伏見稻荷 → 清水寺 → 二年坂・三年坂 → 祇園 → 通天閣／新世界</small></span><span class="chev">▸</span></summary>
+<div class="panel">
+<div class="timeline"><div class="trow"><div class="time">Start</div><div class="tbody"><b>伏見稻荷</b></div></div></div>
+<div class="arrow">↓</div>
+<div class="timeline"><div class="trow"><div class="time"></div><div class="tbody">清水寺 → 二年坂 → 三年坂 → 祇園</div></div></div>
+<div class="arrow">↓ 回大阪</div>
+<div class="timeline"><div class="trow"><div class="time"></div><div class="tbody"><b>通天閣／新世界</b>（FUN PASS）</div></div></div>
+<div class="note">京都地圖分開顯示：伏見稻荷、清水寺・二年坂・三年坂、通天閣・新世界，各自獨立點擊放大。</div>
+<h3>① 伏見稻荷地區</h3>
+<a class="zoomlink" href="assets/d4_fushimi.png" target="_blank" rel="noopener"><img class="mapimg" src="assets/d4_fushimi.png" alt="伏見稻荷逛街美食地圖" loading="lazy"><span class="zoomhint">🔍 點圖獨立放大</span></a>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=伏見稲荷大社" target="_blank" rel="noopener">🧭 導航到伏見稻荷</a>
+<h3>② 清水寺・二年坂・三年坂地區</h3>
+<a class="zoomlink" href="assets/d4_kiyomizu.png" target="_blank" rel="noopener"><img class="mapimg" src="assets/d4_kiyomizu.png" alt="清水寺二年坂三年坂逛街美食地圖" loading="lazy"><span class="zoomhint">🔍 點圖獨立放大</span></a>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=清水寺" target="_blank" rel="noopener">🧭 導航到清水寺</a>
+<h3>③ 通天閣・新世界</h3>
+<a class="zoomlink" href="assets/d4_tsutenkaku.png" target="_blank" rel="noopener"><img class="mapimg" src="assets/d4_tsutenkaku.png" alt="通天閣新世界逛街美食地圖" loading="lazy"><span class="zoomhint">🔍 點圖開原圖放大</span></a>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=通天閣" target="_blank" rel="noopener">🧭 導航到通天閣</a>
+</div></details>
+
+<details id="d5">
+<summary><span>💜 D5｜1/28 臨空城・回台灣<br><small>飯店 → Rinku Premium Outlets → KIX・19:00 起飛</small></span><span class="chev">▸</span></summary>
+<div class="panel">
+<div class="timeline"><div class="trow"><div class="time">09:15</div><div class="tbody"><b>飯店出發</b></div></div></div>
+<div class="arrow">↓ 長堀橋 → Osaka Metro 堺筋線 → 天下茶屋</div>
+<div class="arrow">↓ 南海電鐵 → Rinku Town</div>
+<div class="timeline"><div class="trow"><div class="time">10:10</div><div class="tbody">約抵達臨空城，先寄放行李</div></div></div>
+<h3>🛍 主要 Outlet 品牌</h3>
+<div class="brandlist">
+<span class="brand">HOKA</span><span class="brand tbd">ON（位置待 2027 出發前確認）</span><span class="brand">Coleman</span><span class="brand">Arc'teryx</span><span class="brand">Adidas</span><span class="brand">Nike</span><span class="brand">New Balance</span><span class="brand">The North Face</span><span class="brand">BEAMS</span>
+</div>
+<h3>Rinku Premium Outlets 1F</h3>
+<a class="zoomlink" href="assets/d5_rinku_1f.png" target="_blank" rel="noopener"><img class="mapimg" src="assets/d5_rinku_1f.png" alt="臨空城 Outlet 1F 地圖" loading="lazy"><span class="zoomhint">🔍 點圖放大</span></a>
+<h3>Rinku Premium Outlets 2F／3F</h3>
+<a class="zoomlink" href="assets/d5_rinku_2f3f.png" target="_blank" rel="noopener"><img class="mapimg" src="assets/d5_rinku_2f3f.png" alt="臨空城 Outlet 2F 3F 地圖" loading="lazy"><span class="zoomhint">🔍 點圖放大</span></a>
+<div class="timeline" style="margin-top:14px"><div class="trow"><div class="time">15:20</div><div class="tbody">約開始往 Rinku Town 車站移動</div></div></div>
+<div class="arrow">↓ JR 或 南海電鐵</div>
+<div class="timeline"><div class="trow"><div class="time">16:00</div><div class="tbody">約抵達 KIX</div></div><div class="trow"><div class="time">19:00</div><div class="tbody"><b>班機起飛</b> ✈️</div></div></div>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=Rinku%20Premium%20Outlets" target="_blank" rel="noopener">🧭 導航到臨空城</a>
+<a class="gmap" href="https://www.google.com/maps/search/?api=1&query=關西國際機場" target="_blank" rel="noopener">🧭 導航到 KIX</a>
+</div></details>
+
+<div class="note">💡 點任何地圖會直接開啟原始解析度 PNG／JPG，iPhone 上可以雙指自由放大查看店名、道路與文字；看完點左上角「‹」或向右滑動即可返回。已加入主畫面、離線時，D1～D5 行程與所有地圖圖片一樣能看，只有「導航」按鈕需要網路連線。</div>
+</main>
+<nav class="tabbar">
+  <a class="tabbtn" href="https://www.google.com/maps/search/?api=1&query=HOTEL%20LEGALIE%20Osaka%20Shinsaibashi%20North" target="_blank" rel="noopener"><span class="ic">🏨</span>回飯店</a>
+  <a class="tabbtn" href="#overall"><span class="ic">📋</span>總行程</a>
+  <a class="tabbtn" href="#top"><span class="ic">🗺</span>地圖</a>
+  <a class="tabbtn" href="https://www.google.com/maps/search/?api=1&query=關西國際機場" target="_blank" rel="noopener"><span class="ic">✈️</span>機場</a>
+</nav>
+<script>
+function openHashTarget(){var id=location.hash.replace('#','');if(!id)return;var el=document.getElementById(id);if(el&&el.tagName==='DETAILS'){el.open=true;}}
+window.addEventListener('hashchange',openHashTarget);openHashTarget();
+function updateOnlineState(){var bar=document.getElementById('offlineBar');if(navigator.onLine){bar.classList.remove('show');}else{bar.classList.add('show');}}
+window.addEventListener('online',updateOnlineState);window.addEventListener('offline',updateOnlineState);updateOnlineState();
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('service-worker.js').catch(function(err){console.warn('SW registration failed',err);});});}
+</script>
+</body>
+</html>
