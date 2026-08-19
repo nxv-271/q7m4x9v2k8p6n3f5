@@ -1,6 +1,6 @@
 // 大阪2027 旅行小工具 - Service Worker
-// v3：頁面導覽改為 network-first，避免 iPhone PWA 長期卡在舊 index.html。
-const CACHE_NAME = 'osaka2027-v3';
+// v4：更新手機地圖為全螢幕寬度，頁面導覽維持 network-first。
+const CACHE_NAME = 'osaka2027-v4';
 
 const PRECACHE_URLS = [
   './',
@@ -49,7 +49,6 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // 導覽頁面：優先拿網路最新版，失敗才回離線快取。
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req, { cache: 'no-store' })
@@ -65,7 +64,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 圖片、icon 等靜態檔案：cache-first，保留離線能力。
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
