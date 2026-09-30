@@ -1,6 +1,6 @@
 // 大阪2027 旅行小工具 - Service Worker
 // v6：最終介面優化＋9:16 手機直式地圖。
-const CACHE_NAME = 'osaka2027-v6';
+const CACHE_NAME = 'osaka2027-v7';
 
 const PRECACHE_URLS = [
   './',
